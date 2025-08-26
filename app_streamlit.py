@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import json, joblib
 
-st.set_page_config(page_title="SVM Personality (Streamlit)", page_icon="🤖", layout="centered")
+st.set_page_config(page_title="personality prediction (Streamlit)", page_icon="🤖", layout="centered")
 st.title("🤖 personality prediction by Ezzeldin Shady ")
 
 @st.cache_resource
