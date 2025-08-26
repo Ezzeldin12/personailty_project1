@@ -3,7 +3,7 @@ import pandas as pd
 import json, joblib
 
 st.set_page_config(page_title="SVM Personality (Streamlit)", page_icon="🤖", layout="centered")
-st.title("🤖 SVM Personality Classifier — Streamlit")
+st.title("🤖 personality prediction ")
 
 @st.cache_resource
 def load_artifacts():
