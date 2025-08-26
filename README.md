@@ -1,18 +1,18 @@
 # Personality Prediction Project — SVM + Streamlit
 
 ## 📌 Introduction
-This project predicts whether a person is an **Introvert** or an **Extrovert** based on their social habits.  
-The model is trained with **Support Vector Machine (SVM)** and deployed with **Streamlit**.
+This project predicts whether a person is an **Introvert** or an **Extrovert** based on their lifestyle and social habits.  
+The model is trained using a **Support Vector Machine (SVM)** with RBF kernel and deployed as an interactive **Streamlit app**.  
 
-👉 Try it for yourself, your **brother**, your **friend**, or even your **kid** by entering their lifestyle habits.
+👉 You can try it for yourself, your **brother**, your **friend**, or even your **kid**.
 
 ---
 
 ## 📖 Project Description
-- **Goal:** Predict personality type from lifestyle & social features.  
-- **Dataset:** `personality_dataset.csv` (behavioral survey-like data).  
-- **Model:** SVM (RBF kernel, probability=True).  
-- **Deployment:** Streamlit app.  
+- **Goal:** Predict personality type (Introvert/Extrovert) from behavioral features.  
+- **Dataset:** `personality_dataset.csv`.  
+- **Model:** Support Vector Machine (RBF kernel, probability=True).  
+- **Deployment:** `app_streamlit.py` (Streamlit).  
 - **Artifacts:** `model_svm.joblib`, `scaler.joblib`, `schema.json`.  
 
 ---
@@ -20,57 +20,57 @@ The model is trained with **Support Vector Machine (SVM)** and deployed with **S
 ## 🔄 Project Workflow
 
 ### 1. Data Preparation
-- Columns include:
-  - `Time_spent_Alone`  
-  - `Stage_fear`  
-  - `Social_event_attendance`  
-  - `Going_outside`  
-  - `Drained_after_socializing`  
-  - `Friends_circle_size`  
-  - `Post_frequency`  
-- Target: `Personality` ∈ {Introvert, Extrovert}  
+- Dropped missing rows (since percentage was very small).  
+- Applied **Label Encoding** for categorical columns (`Stage_fear`, `Drained_after_socializing`, `Personality`).  
 
-**Handling Missing Data**  
-- Checked percentage of missing values.  
-- Since the percentage was **very small**, missing rows were **dropped** instead of filling with median/mean.  
-- This avoids introducing artificial values and keeps dataset integrity.  
+### 2. Train/Test Split
+- 80% train / 20% test with stratification.  
+- Performed **before scaling** and **before correlation analysis**.  
 
----
+### 3. Correlation Analysis
+- Conducted only on the **training set** after splitting.  
+- Ensures no test data influences feature exploration.  
 
-### 2. Training Pipeline (`train_svm.py`)
-1. Load dataset.  
-2. Drop missing rows (low percentage → safe).  
-3. Encode binary columns (Yes/No → 1/0).  
-4. Split into features (`X`) and target (`y`).  
-5. Train/Test split (80/20, stratified).  
-6. Standardize features using `StandardScaler` (fit only on train).  
-7. Train SVM (RBF kernel, probability=True).  
-8. Save artifacts (`scaler.joblib`, `model_svm.joblib`, `schema.json`).  
+### 4. Scaling
+- Applied **StandardScaler**:  
+  - Fit on training set only.  
+  - Applied transformation to both train and test.  
 
----
+### 5. Model Training
+- Used `SVC(kernel="rbf", probability=True)`.  
+- Trained on scaled training data.  
+- Saved artifacts: `scaler.joblib`, `model_svm.joblib`, `schema.json`.  
 
-## 🛡️ Avoiding Data Leakage
-- **Scaling:** Fitted scaler only on **training data**, then applied to test.  
-- **Encoding:** Applied consistent mappings (not influenced by target).  
-- **Schema file:** Ensures the app reuses training schema (feature order & mappings).  
-- **Missing data:** Rows dropped **before splitting**, so no leakage of test distribution into training.
-
-✅ This guarantees evaluation reflects **true generalization**.
+### 6. Inference App
+- Streamlit form for manual input.  
+- Data reindexed to match training schema.  
+- Applies saved scaler → model prediction → probabilities shown.  
 
 ---
 
-## 3. Inference App (`app_streamlit.py`)
-- Loads artifacts (`scaler`, `model`, `schema.json`).  
-- User inputs numeric + Yes/No values.  
-- Reindexes data to match training schema.  
-- Applies saved scaler.  
-- Outputs:
-  - Predicted label  
-  - Class probabilities  
+## 🛡️ Data Leakage: How I Avoided It
+Data leakage happens when **information from the test set** sneaks into training, giving artificially high accuracy.  
+I carefully designed the pipeline to prevent this:
+  
+1. **Performed Train/Test split before scaling or correlation**  
+   → test data never influences preprocessing or analysis.  
+
+2. **Scaler fitted only on training set**  
+   → applied later to test set, keeping it isolated.  
+
+3. **Correlation analysis done on training data only**  
+   → prevents knowledge of test distribution from leaking into training.  
+
+4. **Label Encoding applied consistently**  
+   → same encoder mapping used across train/test without refitting on test.  
+
+✅ With these steps, the model evaluation reflects **true generalization performance**.  
 
 ---
 
-## 4. Deployment
-- Local run:
-  ```bash
-  streamlit run app_streamlit.py
+## ✅ Summary
+- Clean dataset (dropped few missing rows).  
+- Label Encoding for categorical variables.  
+- Train/Test split → correlation → scaling → training.  
+- Independent **Data Leakage section** ensures clarity on prevention steps.  
+- Deployed via Streamlit for interactive predictions.  
