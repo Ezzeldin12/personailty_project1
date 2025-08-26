@@ -1,0 +1,20 @@
+{
+  "feature_order": [
+    "Time_spent_Alone",
+    "Stage_fear",
+    "Social_event_attendance",
+    "Going_outside",
+    "Drained_after_socializing",
+    "Friends_circle_size",
+    "Post_frequency"
+  ],
+  "binary_columns_mapped_from_yes_no": [
+    "Stage_fear",
+    "Drained_after_socializing"
+  ],
+  "target": "Personality",
+  "classes_": [
+    "Extrovert",
+    "Introvert"
+  ]
+}
