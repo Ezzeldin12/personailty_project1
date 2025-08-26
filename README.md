@@ -1,68 +1,76 @@
 # Personality Prediction Project — SVM + Streamlit
 
 ## 📌 Introduction
-This project is a **machine learning pipeline** that predicts whether a person is an **Introvert** or an **Extrovert** based on their social habits.  
-The model is trained using **Support Vector Machine (SVM)** and deployed with an interactive **Streamlit app**.  
+This project predicts whether a person is an **Introvert** or an **Extrovert** based on their social habits.  
+The model is trained with **Support Vector Machine (SVM)** and deployed with **Streamlit**.
 
-👉 The idea is simple: you enter behaviors (e.g., hours spent alone, friends circle size, posting frequency), and the app tells you the predicted personality.  
-You can try it for yourself, your **brother**, your **friend**, or even your **kid**.
+👉 Try it for yourself, your **brother**, your **friend**, or even your **kid** by entering their lifestyle habits.
 
 ---
 
 ## 📖 Project Description
-- **Goal:** Predict personality type (Introvert/Extrovert) from lifestyle & social features.  
-- **Dataset:** Behavioral data stored in `personality_dataset.csv`.  
+- **Goal:** Predict personality type from lifestyle & social features.  
+- **Dataset:** `personality_dataset.csv` (behavioral survey-like data).  
 - **Model:** SVM (RBF kernel, probability=True).  
-- **Deployment:** Interactive web app via Streamlit (`app_streamlit.py`).  
-- **Artifacts:** Saved model (`model_svm.joblib`), scaler (`scaler.joblib`), schema (`schema.json`).  
+- **Deployment:** Streamlit app.  
+- **Artifacts:** `model_svm.joblib`, `scaler.joblib`, `schema.json`.  
 
 ---
 
-## 🔄 Project Workflow (Step by Step)
+## 🔄 Project Workflow
 
 ### 1. Data Preparation
-- File: `personality_dataset.csv`  
-- Features:
-  - `Time_spent_Alone` (numeric, hours/day)  
-  - `Stage_fear` (Yes/No → mapped to 1/0)  
-  - `Social_event_attendance` (numeric, per month)  
-  - `Going_outside` (numeric, per week)  
-  - `Drained_after_socializing` (Yes/No → mapped to 1/0)  
-  - `Friends_circle_size` (numeric, number of close friends)  
-  - `Post_frequency` (numeric, posts/week)  
+- Columns include:
+  - `Time_spent_Alone`  
+  - `Stage_fear`  
+  - `Social_event_attendance`  
+  - `Going_outside`  
+  - `Drained_after_socializing`  
+  - `Friends_circle_size`  
+  - `Post_frequency`  
 - Target: `Personality` ∈ {Introvert, Extrovert}  
 
+**Handling Missing Data**  
+- Checked percentage of missing values.  
+- Since the percentage was **very small**, missing rows were **dropped** instead of filling with median/mean.  
+- This avoids introducing artificial values and keeps dataset integrity.  
+
+---
+
 ### 2. Training Pipeline (`train_svm.py`)
-1. **Load dataset** with pandas.  
-2. **Binary encode** Yes/No → 1/0.  
-3. **Split** features (`X`) and target (`y`).  
-4. **Handle missing values** → numeric columns filled with median.  
-5. **Encode categorical** columns (if any left).  
-6. **Split train/test** (80/20, stratified).  
-7. **Scale features** using `StandardScaler`.  
-8. **Train SVM** with RBF kernel and `probability=True`.  
-9. **Save artifacts**:  
-   - `scaler.joblib`  
-   - `model_svm.joblib`  
-   - `schema.json` (feature order, binary cols, target classes)  
+1. Load dataset.  
+2. Drop missing rows (low percentage → safe).  
+3. Encode binary columns (Yes/No → 1/0).  
+4. Split into features (`X`) and target (`y`).  
+5. Train/Test split (80/20, stratified).  
+6. Standardize features using `StandardScaler` (fit only on train).  
+7. Train SVM (RBF kernel, probability=True).  
+8. Save artifacts (`scaler.joblib`, `model_svm.joblib`, `schema.json`).  
 
-### 3. Artifacts
-- **scaler.joblib** → ensures same scaling at inference.  
-- **model_svm.joblib** → trained SVM classifier.  
-- **schema.json** → defines feature order + class labels.  
+---
 
-### 4. Inference App (`app_streamlit.py`)
-- Loads `scaler`, `model`, and `schema.json`.  
-- User enters values:
-  - Numbers → `st.number_input`  
-  - Yes/No → `st.selectbox`  
-- Data is reindexed to match training schema.  
-- Same scaler applied.  
-- Model predicts:
-  - **Prediction** (Introvert/Extrovert)  
-  - **Class probabilities** if available.  
+## 🛡️ Avoiding Data Leakage
+- **Scaling:** Fitted scaler only on **training data**, then applied to test.  
+- **Encoding:** Applied consistent mappings (not influenced by target).  
+- **Schema file:** Ensures the app reuses training schema (feature order & mappings).  
+- **Missing data:** Rows dropped **before splitting**, so no leakage of test distribution into training.
 
-### 5. Deployment
-- **Local run:**  
+✅ This guarantees evaluation reflects **true generalization**.
+
+---
+
+## 3. Inference App (`app_streamlit.py`)
+- Loads artifacts (`scaler`, `model`, `schema.json`).  
+- User inputs numeric + Yes/No values.  
+- Reindexes data to match training schema.  
+- Applies saved scaler.  
+- Outputs:
+  - Predicted label  
+  - Class probabilities  
+
+---
+
+## 4. Deployment
+- Local run:
   ```bash
   streamlit run app_streamlit.py
